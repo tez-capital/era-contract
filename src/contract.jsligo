@@ -1,0 +1,34 @@
+#include "types.jsligo"
+
+// actions
+#include "core/actions.jsligo"
+
+const main = (action: action_type, store: storage_type): return_type => {
+	return match(action, {
+		Approve: (s: address) => approve(s, store),
+		Refuse: (s: address) => refuse(s, store),
+		Withdraw: (amount: tez) => withdraw(amount, store),
+		Default: () => deposit(store)
+	})
+}
+
+const generate_initial_storage = (shareRates: map<address, nat>, about: bytes): storage_type => {
+	let metadata = Big_map.empty as contract_metadata_type;
+	let metadata = Big_map.update("", Some(Bytes.pack("tezos-storage:content")), metadata);
+	let metadata = Big_map.update("content", (Some(about)), metadata);
+
+	let shareRatesTotal = 0 as nat;
+	for (const shareRateInfo of shareRates) {
+		const [_, rate] = shareRateInfo;
+		shareRatesTotal += rate;
+	}
+
+	return { 
+		shareRates: shareRates,
+		shareRatesTotal: shareRatesTotal,
+		shares: (Map.empty as map<address, tez>),
+		depositors: (Big_map.empty as big_map<address, nat>),
+		votes: (Big_map.empty as big_map<[address, address], unit>),
+		metadata: metadata 
+	}
+}

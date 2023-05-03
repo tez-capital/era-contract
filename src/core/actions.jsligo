@@ -1,0 +1,9 @@
+#include "util/assert.jsligo"
+#include "common/voting.jsligo"
+#include "common/transfers.jsligo"
+
+type action_type = 
+	["Approve", address]
+  | ["Refuse", address]
+  | ["Withdraw", tez]
+  | ["Default"]

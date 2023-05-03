@@ -1,0 +1,12 @@
+type contract_metadata_type = big_map<string, bytes>;
+
+type storage_type = {
+	shareRates: map<address, nat>,
+	shareRatesTotal: nat,
+	shares: map<address, tez>,
+	depositors: big_map<address, nat>,
+	votes: big_map<[address, address], unit>,
+	metadata: contract_metadata_type
+};
+
+type return_type = [list<operation>, storage_type];

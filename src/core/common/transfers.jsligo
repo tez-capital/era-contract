@@ -1,0 +1,61 @@
+const withdraw = (amount: tez, store: storage_type) => {
+	assert_member(store);
+	let sender = Tezos.get_sender();
+	let availableAmount = match(Map.find_opt(sender, store.shares), {
+		Some: (v: tez) => v,
+		None: () => 0 as mutez
+	});
+	let newAvailableAmount = match(availableAmount - amount, {
+		Some: (a: tez) => a,
+		None: () => failwith("available amount exceeded")
+	});
+
+	let new_shares = Map.update(sender , Some(newAvailableAmount), store.shares);
+	let targetContract = match(Tezos.get_contract_opt(sender), {
+		Some: (v: contract<unit>) => v,
+		None: () => failwith("no destination contract found") // this should never happen
+	});
+	
+	return [
+		list([Tezos.transaction(unit, amount, targetContract)]),
+		{
+			...store,
+			shares: new_shares
+		}
+	]
+}
+
+const deposit = (store: storage_type) => {
+	let amount = Tezos.get_amount();
+	let memberCount = Map.size(store.shareRates);
+	
+	let portion = amount / store.shareRatesTotal;
+	let dangling = amount / store.shareRatesTotal;
+	let danglingPortion = dangling / memberCount;
+	let danglingAfterDanglingSplit = dangling % memberCount; // this is going to be few mutez, we distribute equally
+
+	let new_shares = store.shares;
+
+	for (const shareRateInfo of store.shareRates) {
+		let [member, shareRate] = shareRateInfo;
+		let allocated = match(Map.find_opt(member, store.shares), {
+			Some: (v: tez) => v,
+			None: () => 0 as mutez
+		});
+		danglingAfterDanglingSplit = match(danglingAfterDanglingSplit - (1 as mutez), {
+			Some: (v: tez) => v,
+			None: () => 0 as mutez
+		});
+		let additional: tez = danglingAfterDanglingSplit == (0 as mutez) ? (0 as mutez) : (1 as mutez);
+		allocated = allocated + shareRate * portion /* portion of new balance*/ + danglingPortion /* dangling portion per member */ + additional;
+		new_shares = Map.update(member, Some(allocated), new_shares);
+	}
+
+	return [
+		list([]),
+		{
+			...store,
+			shares: new_shares
+		}
+	]
+}

@@ -1,0 +1,46 @@
+const approve = (source: address, store: storage_type): return_type => {
+	assert_member(store);
+	assert_vote_not_casted(source, store);
+
+	let existing = Big_map.find_opt(source, store.depositors);
+	let newApprovedBy = match(existing, {
+		Some: (v: nat) => v + (1 as nat),
+		None: () => 1 as nat
+	});
+
+	let new_depositors = Big_map.update(source, Some(newApprovedBy), store.depositors);
+	let new_votes = Big_map.update([Tezos.get_sender(), source], Some(unit), store.votes);
+
+	
+	return [
+		list([]),
+		{
+			...store,
+			depositors: new_depositors,
+			votes: new_votes
+		}
+	]
+}
+
+const refuse = (source: address, store: storage_type): return_type  => {
+	assert_member(store);
+	assert_vote_casted(source, store);
+
+	let existing = Big_map.find_opt(source, store.depositors);
+	let newApprovedBy = match(existing, {
+		Some: (v: nat) => v <= (1 as nat) ? 0 as nat : abs(v - (1 as nat)),
+		None: () => 0 as nat
+	});
+
+	let new_depositors = Big_map.update(source, Some(newApprovedBy), store.depositors);
+	let new_votes = Big_map.update([Tezos.get_sender(), source], None(), store.votes);
+	
+	return [
+		list([]),
+		{
+			...store,
+			depositors: new_depositors,
+			votes: new_votes
+		}
+	]
+}

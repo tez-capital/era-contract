@@ -1,9 +1,9 @@
-name: TEA SCT
-description: TEA Smart Contract Template
+name: TzC23g50
+description: TzC 23g50 escrow 
 authors: [
-	V <admin@alis.is>
+	V
 ]
-homepage: https://github.com/alis-is/tea
+homepage: https://tez.capital/
 interfaces: [
     TZIP-16-21fb73fe
 ]
