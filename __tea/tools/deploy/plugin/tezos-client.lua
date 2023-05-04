@@ -8,7 +8,7 @@ local _checkCmd = "${TEZOS_CLIENT_PATH}" ..
 
 return function(options)
 	local _vars = util.merge_tables(_computed.SANDBOX_VARS, {
-		TEZOS_CLIENT_PATH = options.path or "tezos-client",
+		TEZOS_CLIENT_PATH = options.path or "octez-client",
 		BURN_CAP = options["burn-cap"] or "10",
 		CONTRACT_ID = _computed.ID,
 		SOURCE = options.source,

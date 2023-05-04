@@ -10,7 +10,6 @@ const approve = (source: address, store: storage_type): return_type => {
 
 	let new_depositors = Big_map.update(source, Some(newApprovedBy), store.depositors);
 	let new_votes = Big_map.update([Tezos.get_sender(), source], Some(unit), store.votes);
-
 	
 	return [
 		list([]),
@@ -33,7 +32,7 @@ const refuse = (source: address, store: storage_type): return_type  => {
 	});
 
 	let new_depositors = Big_map.update(source, Some(newApprovedBy), store.depositors);
-	let new_votes = Big_map.update([Tezos.get_sender(), source], None(), store.votes);
+	let new_votes = Big_map.remove([Tezos.get_sender(), source], store.votes);
 	
 	return [
 		list([]),

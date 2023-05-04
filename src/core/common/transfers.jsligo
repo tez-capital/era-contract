@@ -26,11 +26,13 @@ const withdraw = (amount: tez, store: storage_type) => {
 }
 
 const deposit = (store: storage_type) => {
+	assert_is_approved(store);
+
 	let amount = Tezos.get_amount();
 	let memberCount = Map.size(store.shareRates);
 	
 	let portion = amount / store.shareRatesTotal;
-	let dangling = amount / store.shareRatesTotal;
+	let dangling = amount % store.shareRatesTotal;
 	let danglingPortion = dangling / memberCount;
 	let danglingAfterDanglingSplit = dangling % memberCount; // this is going to be few mutez, we distribute equally
 

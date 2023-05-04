@@ -1,6 +1,6 @@
 const assert_member = (store: storage_type) => {
 	let sender = Tezos.get_sender();
-	assert_with_error(Map.mem(sender, store.shares), "not a member")
+	assert_with_error(Map.mem(sender, store.shareRates), "not a member")
 }
 
 const assert_vote_not_casted = (voteFor: address, store: storage_type) => {
@@ -18,7 +18,7 @@ const assert_is_approved = (store: storage_type) => {
 	let requiresApprovals : nat = Map.size(store.shareRates);
 	let approvals = Big_map.find_opt(sender, store.depositors);
 	match(approvals, {
-		Some: (v: nat) => assert_with_error(v > requiresApprovals, "not enough approvals"),
+		Some: (v: nat) => assert_with_error(v == requiresApprovals, "not enough approvals"),
 		None: () => failwith("not approved")
 	})
 }

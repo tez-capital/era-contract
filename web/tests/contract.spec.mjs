@@ -1,72 +1,84 @@
 import test from "ava";
-import { setup } from "./base.mjs"
+import { setup, BOB_ADDR, ALICE_ADDR } from "./base.mjs"
 
-test.serial("increment (locked - admin)", async (t) => {
-	const { admin } = await setup();
-	await (await admin.setLock(true)).confirmation() // reset
-	let storage = (await admin.get_contract_storage())
-	const initialValue = storage.state.toNumber()
-	await (await admin.increment(2)).confirmation()
-	storage = (await admin.get_contract_storage())
-	t.is(storage.state.toNumber(), initialValue + 2)
-});
+const mutezFactor = 1000000;
 
-test.serial("increment (locked - not admin)", async (t) => {
-	const { bob, admin } = await setup();
-	await (await admin.setLock(true)).confirmation() // reset
-	let storage = (await bob.get_contract_storage())
-	const initialValue = storage.state.toNumber()
-	try {
-		await (await bob.increment(2)).confirmation()
-		t.fail("Should not be able to increment if locked and not admin")
-	} catch (err) {
-		t.true(err.toString().includes("not admin"))
+const refuseAddr = async (addr) => {
+	const { alice, bob } = await setup();
+	const members = [alice, bob]
+	for (const member of members) {
+		try {
+			await (await member.refuse(addr)).confirmation(1);
+		} catch (err) { }
 	}
-	storage = (await bob.get_contract_storage())
-	t.is(storage.state.toNumber(), initialValue)
-});
+}
 
-test.serial("increment (not locked - not admin)", async (t) => {
-	const { bob, admin } = await setup();
-	await (await admin.setLock(false)).confirmation() // reset
-	let storage = (await bob.get_contract_storage())
-	const initialValue = storage.state.toNumber()
-	await (await bob.increment(3)).confirmation()
-	storage = (await bob.get_contract_storage())
-	t.is(storage.state.toNumber(), initialValue + 3)
-});
-
-test.serial("decrement (locked - admin)", async (t) => {
-	const { admin } = await setup();
-	await (await admin.setLock(true)).confirmation() // reset
-	let storage = (await admin.get_contract_storage())
-	const initialValue = storage.state.toNumber()
-	await (await admin.decrement(2)).confirmation()
-	storage = (await admin.get_contract_storage())
-	t.is(storage.state.toNumber(), initialValue - 2)
-});
-
-test.serial("decrement (locked - not admin)", async (t) => {
-	const { bob, admin } = await setup();
-	await (await admin.setLock(true)).confirmation() // reset
-	let storage = (await bob.get_contract_storage())
-	const initialValue = storage.state.toNumber()
-	try {
-		await (await bob.decrement(2)).confirmation()
-		t.fail("Should not be able to decrement if locked and not admin")
-	} catch (err) {
-		t.true(err.toString().includes("not admin"))
+const approveAddr = async (addr) => {
+	const { alice, bob } = await setup();
+	const members = [alice, bob]
+	for (const member of members) {
+		try {
+			await (await member.approve(addr)).confirmation();
+		} catch (err) { }
 	}
-	storage = (await bob.get_contract_storage())
-	t.is(storage.state.toNumber(), initialValue)
+}
+
+const get_shares = async (addr) => {
+	const { alice } = await setup();
+
+	const storage = await alice.get_contract_storage()
+	const shares = storage.shares;
+	const result = shares.get(addr)
+	return result?.toNumber() ?? 0
+}
+
+test.serial("deposit (not approved)", async (t) => {
+	const { alice, bob } = await setup();
+	await refuseAddr(BOB_ADDR); // refuse by all
+	const balance = (await alice.get_balance()).toNumber()
+	try {
+		const op = await alice.deposit(1000, false)
+		await op.confirmation();
+		t.true("should fail!")
+	} catch (err) {
+		t.true(err.toString().includes("not approved") || err.toString().includes("not enough approvals"))
+	}
+
+	try {
+		const op = await bob.deposit(1000, false)
+		await op.confirmation();
+		t.true("should fail!")
+	} catch (err) {
+		t.true(err.toString().includes("not approved") || err.toString().includes("not enough approvals"))
+	}
+	t.is(balance, (await bob.get_balance()).toNumber())
 });
 
-test.serial("decrement (not locked - not admin)", async (t) => {
-	const { bob, admin } = await setup();
-	await (await admin.setLock(false)).confirmation() // reset
-	let storage = (await bob.get_contract_storage())
-	const initialValue = storage.state.toNumber()
-	await (await bob.decrement(3)).confirmation()
-	storage = (await bob.get_contract_storage())
-	t.is(storage.state.toNumber(), initialValue - 3)
+test.serial("deposit (approved)", async (t) => {
+	const { alice, bob } = await setup();
+	await refuseAddr(BOB_ADDR); // refuse by all
+
+	await (await alice.approve(BOB_ADDR)).confirmation(1);
+	await (await bob.approve(BOB_ADDR)).confirmation(1)
+
+	const balance = (await alice.get_balance()).toNumber()
+	try {
+		const op = await alice.deposit(1000, false)
+		await op.confirmation(1);
+		t.true("should fail!")
+	} catch (err) {
+		t.true(err.toString().includes("not approved"))
+	}
+
+	const aliceShares = await get_shares(ALICE_ADDR)
+	const bobShares = await get_shares(BOB_ADDR)
+
+	const op = await bob.deposit(1000, false)
+	await op.confirmation(1);
+	t.is(balance + 1000 * mutezFactor, (await bob.get_balance()).toNumber())
+
+	t.is(await get_shares(ALICE_ADDR) - aliceShares, 850 * mutezFactor)
+	t.is(await get_shares(BOB_ADDR) - bobShares, 150 * mutezFactor)
 });
+
+

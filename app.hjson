@@ -33,12 +33,12 @@ configuration: {
 		// image: ligolang/ligo:0.49.0
 		syntax: jsligo
 		protocol: lima
-		initial-storage-args: (Map.literal(list([ [("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" as address), 85 as nat], [("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" as address), 15 as nat] ]))), ${metadata}
+		initial-storage-args: (Map.literal(list([ [("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" as address), 85 as nat], [("tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6" as address), 15 as nat] ]))), ${metadata}
 	}
 	sandbox: {
 		// name: tezos-sandbox
 		// defaults to `sandbox-${id}`
-		image: oxheadalpha/flextesa:20230313
+		image: registry.hub.docker.com/oxheadalpha/flextesa:20230313
 		script: mumbaibox
 		// rpc_port: 20000
 	}

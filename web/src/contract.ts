@@ -9,6 +9,8 @@ export interface IOperatorOpParams {
 	token_id: number
 }
 
+const mutezFactor = 1000000;
+
 export class Contract {
 	private toolkit: TezosToolkit
 	private contractAddr: string
@@ -35,7 +37,7 @@ export class Contract {
 		return await this.toolkit.wallet.at(this.contractAddr, tzip16 /* compose(tzip12, tzip16) */)
 	}
 
-	async get_rpc(): Promise<RpcClientInterface> {
+	get_rpc(): RpcClientInterface {
 		return this.toolkit.rpc
 	}
 
@@ -55,13 +57,29 @@ export class Contract {
 		}
 	}
 
-	async increment(n: number) {
-		const contract = await this.get_contract();
-		return await contract.methodsObject.increment(n).send()
+	async get_balance() {
+		return await this.get_rpc().getBalance(this.ContractAddress)
 	}
 
-	async decrement(n: number) {
+	async approve(depositorAddr: string) {
 		const contract = await this.get_contract();
-		return await contract.methodsObject.decrement(n).send()
+		return await contract.methodsObject.approve(depositorAddr).send()
+	}
+
+	async refuse(depositorAddr: string) {
+		const contract = await this.get_contract();
+		return await contract.methodsObject.refuse(depositorAddr).send()
+	}
+
+	async withdraw(amount: number, isMutez: boolean = true) {
+		const contract = await this.get_contract();
+		if (!isMutez) {
+			amount = Math.floor(amount * mutezFactor)
+		}
+		return await contract.methodsObject.withdraw(amount).send()
+	}
+
+	async deposit(amount: number, isMutez: boolean = true) {
+		return this.toolkit.contract.transfer({ to: this.ContractAddress, amount: amount, mutez: isMutez})
 	}
 }
