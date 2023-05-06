@@ -87,12 +87,12 @@ return {
 				am.execute(_command, _args)
 			end
 		},
-		test = {
-			description = "TEA 'test' sub command",
-			summary = "Runs ligo tests",
-			action = "__tea/tools/tests/ligo.lua",
-			contextFailExitCode = EXIT_APP_INTERNAL_ERROR
-		},
+		-- test = {
+		-- 	description = "TEA 'test' sub command",
+		-- 	summary = "Runs ligo tests",
+		-- 	action = "__tea/tools/tests/ligo.lua",
+		-- 	contextFailExitCode = EXIT_APP_INTERNAL_ERROR
+		-- },
 		["test-js"] = {
 			description = "TEA 'test-js' sub command",
 			summary = "Runs ligo tests",
