@@ -34,7 +34,7 @@ const deposit = (store: storage_type) => {
 	let portion = amount / store.shareRatesTotal;
 	let dangling = amount % store.shareRatesTotal;
 	let danglingPortion = dangling / memberCount;
-	let danglingAfterDanglingSplit = dangling % memberCount; // this is going to be few mutez, we distribute equally
+	let remainder = dangling % memberCount; // this is going to be few mutez, we distribute equally
 
 	let new_shares = store.shares;
 
@@ -44,12 +44,8 @@ const deposit = (store: storage_type) => {
 			Some: (v: tez) => v,
 			None: () => 0 as mutez
 		});
-		danglingAfterDanglingSplit = match(danglingAfterDanglingSplit - (1 as mutez), {
-			Some: (v: tez) => v,
-			None: () => 0 as mutez
-		});
-		let additional: tez = danglingAfterDanglingSplit == (0 as mutez) ? (0 as mutez) : (1 as mutez);
-		allocated = allocated + shareRate * portion /* portion of new balance*/ + danglingPortion /* dangling portion per member */ + additional;
+		allocated = allocated + shareRate * portion /* portion of new balance*/ + danglingPortion /* dangling portion per member */ + remainder;
+		remainder = 0 as mutez;
 		new_shares = Map.update(member, Some(allocated), new_shares);
 	}
 

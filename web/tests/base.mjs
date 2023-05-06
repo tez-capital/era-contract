@@ -8,10 +8,12 @@ const appHjson = parse((await fs.readFile("../app.hjson")).toString())
 
 const ALICE_KEY = "edsk3QoqBuvdamxouPhin7swCvkQNgq4jP5KZPbwWNnwdZpSpJiEbq"
 const BOB_KEY = "edsk3RFfvaFaxbHx8BMtEW1rKQcPtDML3LXjNqMNLCzC3wLC1bWbAt"
+const CHARLIE_KEY = "edsk3UZwcSvqFZoc5ajXxkD4EojY2fpDTsbdrCxiZXwoWxLpbhdnhV"
 const RPC_URL = `http://localhost:${get(appHjson, "sandbox.rpc_port", 20000)}`
 
 export const ALICE_ADDR = "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"
 export const BOB_ADDR = "tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6"
+export const CHARLIE_ADDR = "tz1hrtCTFqpgxFtyYYaXtJib8YCZG4Uai6cv"
 
 export const setup = async () => {
 	const id = appHjson.id
@@ -20,5 +22,9 @@ export const setup = async () => {
 	);
 	const alice = new Contract(RPC_URL, contractAddress, { test: true, signer: await InMemorySigner.fromSecretKey(ALICE_KEY) });
 	const bob = new Contract(RPC_URL, contractAddress, { test: true, signer: await InMemorySigner.fromSecretKey(BOB_KEY) });
-	return { bob, alice, contractAddress }
+	const charlie = new Contract(RPC_URL, contractAddress, { test: true, signer: await InMemorySigner.fromSecretKey(CHARLIE_KEY) });
+
+	await (await bob.Toolkit.wallet.transfer({ to: CHARLIE_ADDR, amount: 1000 }).send()).confirmation()
+	
+	return { bob, alice, charlie, contractAddress }
 };

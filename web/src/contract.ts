@@ -2,6 +2,7 @@ import { TezosToolkit, Signer, Wallet, ContractAbstraction } from "@taquito/taqu
 //import { Tzip12Module, tzip12, Tzip12ContractAbstraction } from "@taquito/tzip12";
 import { Tzip16Module, tzip16, Tzip16ContractAbstraction } from "@taquito/tzip16";
 import { RpcClientInterface } from "@taquito/rpc";
+import BigNumber from "bignumber.js";
 
 export interface IOperatorOpParams {
 	owner: string,
@@ -37,8 +38,12 @@ export class Contract {
 		return await this.toolkit.wallet.at(this.contractAddr, tzip16 /* compose(tzip12, tzip16) */)
 	}
 
-	get_rpc(): RpcClientInterface {
+	get Rpc(): RpcClientInterface {
 		return this.toolkit.rpc
+	}
+
+	get Toolkit(): TezosToolkit {
+		return this.toolkit
 	}
 
 	get ContractAddress() {
@@ -57,8 +62,9 @@ export class Contract {
 		}
 	}
 
-	async get_balance() {
-		return await this.get_rpc().getBalance(this.ContractAddress)
+	async get_contract_balance(inTez: boolean) {
+		const balance = await this.Rpc.getBalance(this.ContractAddress)
+		return !inTez ? balance : balance.toNumber() / mutezFactor
 	}
 
 	async approve(depositorAddr: string) {
@@ -71,15 +77,23 @@ export class Contract {
 		return await contract.methodsObject.refuse(depositorAddr).send()
 	}
 
-	async withdraw(amount: number, isMutez: boolean = true) {
+	async withdraw(amount: number, inTez: boolean) {
 		const contract = await this.get_contract();
-		if (!isMutez) {
+		if (inTez) {
 			amount = Math.floor(amount * mutezFactor)
 		}
 		return await contract.methodsObject.withdraw(amount).send()
 	}
 
-	async deposit(amount: number, isMutez: boolean = true) {
-		return this.toolkit.contract.transfer({ to: this.ContractAddress, amount: amount, mutez: isMutez})
+	async deposit(amount: number, inTez: boolean) {
+		return this.toolkit.contract.transfer({ to: this.ContractAddress, amount: amount, mutez: !inTez })
+	}
+
+	async get_shares(inTez: boolean) {
+		const storage = await this.get_contract_storage()
+		const shareStore = (storage as any).shares;
+		const result: BigNumber | undefined = shareStore.get(await this.get_addr());
+		const shares = result ?? new BigNumber(0);
+		return !inTez ? shares : shares.toNumber() / mutezFactor
 	}
 }
