@@ -14,8 +14,8 @@ const main = (action: action_type, store: storage_type): return_type => {
 
 const generate_initial_storage = (shareRates: map<address, nat>, about: bytes): storage_type => {
 	let metadata = Big_map.empty as contract_metadata_type;
-	let metadata = Big_map.update("", Some(Bytes.pack("tezos-storage:content")), metadata);
-	let metadata = Big_map.update("content", (Some(about)), metadata);
+	metadata = Big_map.update("", Some(Bytes.pack("tezos-storage:content")), metadata);
+	metadata = Big_map.update("content", (Some(about)), metadata);
 
 	let shareRatesTotal = 0 as nat;
 	for (const shareRateInfo of shareRates) {

@@ -27,12 +27,10 @@ configuration: {
 	ligo: {
 		// global: true
 		version: latest
-		// or exact
-		version: 0.62.0
 		// or container
 		// image: ligolang/ligo:0.49.0
 		syntax: jsligo
-		protocol: lima
+		protocol: mumbai
 		initial-storage-args: (Map.literal(list([ [("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" as address), 85 as nat], [("tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6" as address), 15 as nat] ]))), ${metadata}
 	}
 	sandbox: {

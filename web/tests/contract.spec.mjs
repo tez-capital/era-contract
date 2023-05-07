@@ -112,7 +112,7 @@ test.serial("refuse", async (t) => {
 
 	await (await (await bob.refuse(CHARLIE_ADDR)).send()).confirmation()
 	try {
-		const op = await (await charlie.deposit(1000, true)).send()
+		const op = await (await charlie.deposit(100, true)).send()
 		await op.confirmation();
 		t.true("should fail!")
 	} catch (err) {
@@ -166,7 +166,7 @@ test.serial("deposit (not approved)", async (t) => {
 	}
 
 	try {
-		const op = await (await charlie.deposit(1000, true)).send()
+		const op = await (await charlie.deposit(100, true)).send()
 		await op.confirmation();
 		t.true("should fail!")
 	} catch (err) {
@@ -202,7 +202,7 @@ test.serial("deposit (approved)", async (t) => {
 	t.is(await bob.get_shares() - bobShares, 150 * mutezFactor)
 
 	try {
-		const op = await (await charlie.deposit(1000, true)).send()
+		const op = await (await charlie.deposit(100, true)).send()
 		await op.confirmation();
 		t.true("should fail!")
 	} catch (err) {
