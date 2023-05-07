@@ -24,7 +24,5 @@ export const setup = async () => {
 	const bob = new Contract(RPC_URL, contractAddress, { test: true, signer: await InMemorySigner.fromSecretKey(BOB_KEY) });
 	const charlie = new Contract(RPC_URL, contractAddress, { test: true, signer: await InMemorySigner.fromSecretKey(CHARLIE_KEY) });
 
-	await (await bob.Toolkit.wallet.transfer({ to: CHARLIE_ADDR, amount: 1000 }).send()).confirmation()
-	
 	return { bob, alice, charlie, contractAddress }
 };

@@ -69,12 +69,12 @@ export class Contract {
 
 	async approve(depositorAddr: string) {
 		const contract = await this.get_contract();
-		return await contract.methodsObject.approve(depositorAddr).send()
+		return contract.methodsObject.approve(depositorAddr)
 	}
 
 	async refuse(depositorAddr: string) {
 		const contract = await this.get_contract();
-		return await contract.methodsObject.refuse(depositorAddr).send()
+		return contract.methodsObject.refuse(depositorAddr)
 	}
 
 	async withdraw(amount: number, inTez: boolean) {
@@ -82,11 +82,11 @@ export class Contract {
 		if (inTez) {
 			amount = Math.floor(amount * mutezFactor)
 		}
-		return await contract.methodsObject.withdraw(amount).send()
+		return contract.methodsObject.withdraw(amount)
 	}
 
 	async deposit(amount: number, inTez: boolean) {
-		return this.toolkit.contract.transfer({ to: this.ContractAddress, amount: amount, mutez: !inTez })
+		return this.toolkit.wallet.transfer({ to: this.ContractAddress, amount: amount, mutez: !inTez })
 	}
 
 	async get_shares(inTez: boolean) {
@@ -95,5 +95,18 @@ export class Contract {
 		const result: BigNumber | undefined = shareStore.get(await this.get_addr());
 		const shares = result ?? new BigNumber(0);
 		return !inTez ? shares : shares.toNumber() / mutezFactor
+	}
+
+	async is_approved() {
+		const storage = await this.get_contract_storage() as any
+		const shareRatesStore = storage.shareRates;
+		const depositors = storage.depositors
+		let numberOfVotesRequired = 0
+		for await (const _ of shareRatesStore.keys()) {
+			numberOfVotesRequired++;
+		}
+		const votes: BigNumber | undefined = await depositors.get(await this.get_addr())
+		if (!votes) return false
+		return votes.toNumber() === numberOfVotesRequired
 	}
 }
