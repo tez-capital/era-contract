@@ -1,6 +1,6 @@
-## 23g50 Contract
+## ERA Contract
 
-The 23g50 contract is a decentralized solution for managing funds deposited by approved entities among a group of independent members who have predefined, fixed share levels. The funds deposited into the contract are automatically split according to the share ratios of the members. The contract ensures that only depositors approved by all members can deposit funds.
+The ERA contract is a decentralized solution for managing funds deposited by approved entities among a group of independent members who have predefined, fixed share levels. The funds deposited into the contract are automatically split according to the share ratios of the members. The contract ensures that only depositors approved by all members can deposit funds.
 
 ### Testing
 
